@@ -37,35 +37,22 @@ blogRouter.use("/api/v1/blog/*", async (c, next) => {
 });
 
 blogRouter.post('/', async (c) => {
-    
-    
+    const userId = c.get('userId');
+	const prisma = new PrismaClient({
+		datasourceUrl: c.env?.DATABASE_URL	,
+	}).$extends(withAccelerate());
 
-    
-    const prisma = new PrismaClient({
-      datasourceUrl: c.env.DATABASE_URL,
-    }).$extends(withAccelerate())
-
-    
-    try {
-        const body = await c.req.json();
-        
-        // Temporary demo authorId for testing
-        const demoAuthorId = 25; // Replace with an actual user ID from your database
-    
-        const blog = await prisma.blog.create({
-          data: {
-            title: body.title,
-            content: body.content,
-            authorId: demoAuthorId, // Using demoAuthorId for testing
-          },
-        });
-    
-        return c.json({ id: blog.id });
-      } catch (error) {
-        console.error('Error creating blog post:', error);
-        return c.json({ error: 'Internal server error' }, 500);
-
-      }
+	const body = await c.req.json();
+	const blog = await prisma.blog.create({
+		data: {
+			title: body.title,
+			content: body.content,
+			authorId: userId
+		}
+	});
+	return c.json({
+		id: blog.id
+	});
 })
 
 blogRouter.put('/', async (c) => {
